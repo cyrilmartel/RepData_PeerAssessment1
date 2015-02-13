@@ -14,14 +14,13 @@ data <- read.csv("activity.csv", colClasses = c("numeric", "character", "numeric
 
 ## What is mean total number of steps taken per day?
 
-
 ```{r}
 library(dplyr)
 ##groups the data by date
-data <- group_by(data, date)
+data2 <- group_by(data, date)
 
 ##calculate total number of steps per day
-stepsperday <- summarize(data, sum(steps, na.rm=TRUE))
+stepsperday <- summarize(data2, sum(steps, na.rm=TRUE))
 stepsperday
 
 ##assigns a convenient column name to total number of steps 
@@ -31,18 +30,114 @@ colnames(stepsperday)[2] <- "steps"
 hist(stepsperday$steps)
 
 ##mean total number of steps taken per day
-mean(stepsperday$steps)
-
+x <- mean(stepsperday$steps)
+x
 ## median of the total number of steps taken per day
-median(stepsperday$steps)
+y <- median(stepsperday$steps)
+y
 ```
+The mean number of steps taken per day is `r x`. The median number of steps taken per day is `r y`
 
 ## What is the average daily activity pattern?
 
+```{r}
+##calculate mean number of steps per 5-min interval averaged across all days
+data3 <- group_by(data, interval)
+stepsperinterval <- summarize (data3, mean(steps, na.rm = TRUE))
 
+## plots the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+plot(stepsperinterval, type="l")
+```
+
+```{r}
+## Finds which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps
+colnames(stepsperinterval)[2] <- "stepsavg"
+data4 <- filter(stepsperinterval, stepsavg == max(stepsperinterval$stepsavg))
+data4
+z <- data4[1,1]
+```
+The interval `r z` contains the maximum number of steps. 
 
 ## Imputing missing values
 
+```{r}
+## number of NAs for steps variable
+n1 <- length(which(is.na(data$steps)))
+n1
+```
+There are `r n1` missing values in the dataset.
 
+We will replace missing values by the mean number of steps across days for the corresponding interval.
+
+The steps are as follow:
+
+1) Merge the original dataset with the summary of mean number of steps across days for each interval.This way, each row will include the value observed on that particular interval for a particular day in the steps variable, as well as the mean number of steps across days for that particular interval in the stepsavg variable
+
+2) Whevener a row contains NA in the steps column, it will be replaced by the value from the stepsavg column
+
+3) The stepsavg column is removed, and columns and observations are re-ordered to match the original dataset.
+
+```{r}
+##adds a column containing the mean number of steps across days for corresponding interval to each row
+data5 <- merge(data, stepsperinterval, by = "interval")
+##NAs for the steps variable are replaced by mean value across day for corresponding interval
+data5$steps[is.na(data5$steps)] <- data5$stepsavg[is.na(data5$steps)]
+##creates a dataset equal to the original one, with missing data filled in.
+data5 <- select(data5, -stepsavg)
+data5 <- arrange(data5, date, interval)
+data5 <- select(data5, steps, date, interval)
+head(data5,20)
+##checks that the dataset contains no NA
+length(which(is.na(data5$steps)))
+```
+
+We want to check the effect of these new values.
+```{r}
+##groups the data by date
+data6 <- group_by(data5, date)
+
+##calculate total number of steps per day
+stepsperday2 <- summarize(data6, sum(steps, na.rm=TRUE))
+stepsperday2
+
+##assigns a convenient column name to total number of steps 
+colnames(stepsperday2)[2] <- "steps"
+
+## creates an hitstogram of total number of steps per day
+hist(stepsperday2$steps)
+
+##mean total number of steps taken per day
+x2 <- mean(stepsperday2$steps)
+x2
+## median of the total number of steps taken per day
+y2 <- median(stepsperday2$steps)
+y2
+```
+The mean number of steps taken per day with the new data is `r x2`. The median number of steps taken per day with the new data is `r y2`. This increases the mean of total number of steps taken per day, as well as the median (to a lesser extent). Interestingly, the mean and the median are now equal. If you are good at stats, maybe you can explain me that in the comments/feedback section?(Thanks!)
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+##takes the dataset with added data instead of NAs, and converts data into POSIXlt format
+data5$date <- strptime(data5$date, format="%Y-%m-%d")
+
+##creates the weekday column, containing a numeric value from 1(Monday) to 7(Sunday)
+data5$weekday <- format(data5$date, format = "%u")
+data5$weekday <- as.numeric(data5$weekday)
+
+##Weekday values lesser than or equal to five are renamed "weekday"
+data5$weekday[data5$weekday <= 5] <- "weekday"
+##Remaining values ("6" and "7" are renamed "weekend")
+data5$weekday[data5$weekday == "6"|data5$weekday == "7"] <- "weekend"
+head(data5, 20)
+## values from column weekday are coerced into factors
+data5$weekday <- as.factor(data5$weekday)
+class(data5$weekday)
+```
+
+In the next chunk of code, we want to mkake a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
+```{r}
+
+```
+
