@@ -138,6 +138,11 @@ class(data5$weekday)
 In the next chunk of code, we want to mkake a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
 ```{r}
+data8 <- group_by(data8, weekday, interval)
+data9 <- summarize(data8, mean(steps))
+colnames(data9)[3] <- "steps"
 
+## needs a tad more work to make it look good
+qplot(x= interval, y= steps, data=data9,geom=c("line"),facets=.~weekday)        
 ```
 

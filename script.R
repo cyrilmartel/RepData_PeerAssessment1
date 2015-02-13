@@ -54,3 +54,10 @@ data7$weekday[data7$weekday <= 5] <- "weekday"
 data7$weekday[data7$weekday == "6"|data7$weekday == "7"] <- "weekend"
 
 class(data7$weekday)
+
+
+data8 <- group_by(data8, weekday, interval)
+data9 <- summarize(data8, mean(steps))
+colnames(data9)[3] <- "steps"
+
+qplot(x= interval, y= steps, data=data9,geom=c("line"),facets=.~weekday)	
