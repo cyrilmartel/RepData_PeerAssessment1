@@ -7,12 +7,35 @@ output:
 
 
 ## Loading and preprocessing the data
-
-
+```{r}
+unzip("activity.zip")
+data <- read.csv("activity.csv", colClasses = c("numeric", "character", "numeric"))
+```
 
 ## What is mean total number of steps taken per day?
 
 
+```{r}
+library(dplyr)
+##groups the data by date
+data <- group_by(data, date)
+
+##calculate total number of steps per day
+stepsperday <- summarize(data, sum(steps, na.rm=TRUE))
+stepsperday
+
+##assigns a convenient column name to total number of steps 
+colnames(stepsperday)[2] <- "steps"
+
+## creates an hitstogram of total number of steps per day
+hist(stepsperday$steps)
+
+##mean total number of steps taken per day
+mean(stepsperday$steps)
+
+## median of the total number of steps taken per day
+median(stepsperday$steps)
+```
 
 ## What is the average daily activity pattern?
 
