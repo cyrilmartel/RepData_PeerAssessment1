@@ -8,6 +8,7 @@ output:
 
 ## Loading and preprocessing the data
 ```{r}
+##The working directory contains the zip file "activity.zip"
 unzip("activity.zip")
 data <- read.csv("activity.csv", colClasses = c("numeric", "character", "numeric"))
 ```
@@ -52,7 +53,8 @@ plot(stepsperinterval, type="l")
 ```{r}
 ## Finds which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps
 colnames(stepsperinterval)[2] <- "stepsavg"
-data4 <- filter(stepsperinterval, stepsavg == max(stepsperinterval$stepsavg))
+s <- max(stepsperinterval$stepsavg)
+data4 <- filter(stepsperinterval, stepsavg == s)
 data4
 z <- data4[1,1]
 ```
@@ -138,11 +140,15 @@ class(data5$weekday)
 In the next chunk of code, we want to mkake a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
 ```{r}
-data8 <- group_by(data8, weekday, interval)
-data9 <- summarize(data8, mean(steps))
-colnames(data9)[3] <- "steps"
+## removes the date column(POSIXlt objects somehow mess with filter(). Any idea why?)
+data6 <- select(data5, -date)
+data6 <- group_by(data6, weekday, interval)
+data7 <- summarize(data6, mean(steps))
+colnames(data7)[3] <- "steps"
 
-## needs a tad more work to make it look good
-qplot(x= interval, y= steps, data=data9,geom=c("line"),facets=.~weekday)        
+## Uses qplot to plot 5 minutes interval vs avg of steps taken, for weekdays or week-end
+## The format is slightly different from the example, but the graph presents the same info, same axes, and same panels.
+library(ggplot2)
+qplot(x= interval, y= steps, data=data7,geom=c("line"),facets=.~weekday)        
 ```
 

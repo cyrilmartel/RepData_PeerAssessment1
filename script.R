@@ -23,7 +23,8 @@ plot(stepsperinterval, type="l")
 
 ## Finds which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps
 colnames(stepsperinterval)[2] <- "stepsavg"
-data4 <- filter(stepsperinterval, stepsavg == max(stepsperinterval$steps))
+s <- max(stepsperinterval$stepsavg)
+data4 <- filter(stepsperinterval, stepsavg == s)
 data4
 z <- data4[1,1]
 
@@ -55,7 +56,7 @@ data7$weekday[data7$weekday == "6"|data7$weekday == "7"] <- "weekend"
 
 class(data7$weekday)
 
-
+data8 <- select(data7, -date)
 data8 <- group_by(data8, weekday, interval)
 data9 <- summarize(data8, mean(steps))
 colnames(data9)[3] <- "steps"
